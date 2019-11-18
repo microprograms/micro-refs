@@ -10,6 +10,7 @@ public class RefBuilder {
 	private String label = "";
 	private String comment = "";
 	private String properties = "{}";
+	private Integer order = 0;
 	private long createAt = System.currentTimeMillis();
 
 	public RefBuilder location(Class<?> clz, String id) {
@@ -42,6 +43,11 @@ public class RefBuilder {
 		return this;
 	}
 
+	public RefBuilder order(Integer order) {
+		this.order = order;
+		return this;
+	}
+
 	public RefBuilder createAt(long createAt) {
 		this.createAt = createAt;
 		return this;
@@ -52,6 +58,7 @@ public class RefBuilder {
 		ref.setLabel(label);
 		ref.setComment(comment);
 		ref.setProperties(properties);
+		ref.setOrder(order);
 		ref.setCreateAt(createAt);
 		return ref;
 	}

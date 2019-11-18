@@ -30,6 +30,7 @@ public class QueryRefResult<S, T> extends QueryResult<T> {
 		refBuilder.label(json.getString("ref_label"));
 		refBuilder.comment(json.getString("ref_comment"));
 		refBuilder.properties(json.getString("ref_properties"));
+		refBuilder.order(json.getInteger("ref_order"));
 		refBuilder.createAt(json.getLongValue("ref_createAt"));
 		return refBuilder.build();
 	}

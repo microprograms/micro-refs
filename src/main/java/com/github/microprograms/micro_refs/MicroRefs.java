@@ -117,6 +117,7 @@ public class MicroRefs implements Refs {
 		fields.add(new FieldDefinition("ref_label", "标签", FieldTypeEnum.text_type, "", 0));
 		fields.add(new FieldDefinition("ref_comment", "备注", FieldTypeEnum.text_type, "", 0));
 		fields.add(new FieldDefinition("ref_properties", "属性", FieldTypeEnum.text_type, "", 0));
+		fields.add(new FieldDefinition("ref_order", "排序号", FieldTypeEnum.long_type, "", 0));
 		fields.add(new FieldDefinition("ref_createAt", "创建时间", FieldTypeEnum.long_type, "", 0));
 		fields.add(new FieldDefinition("ref_updateAt", "更新时间", FieldTypeEnum.long_type, "", 0));
 		oss.createTable(new CreateTableCommand(new TableDefinition(tableName, tableComment, fields)));
@@ -143,6 +144,7 @@ public class MicroRefs implements Refs {
 		fields.add(new Field("ref_label", ref.getLabel()));
 		fields.add(new Field("ref_comment", ref.getComment()));
 		fields.add(new Field("ref_properties", ref.getProperties()));
+		fields.add(new Field("ref_order", ref.getOrder()));
 		fields.add(new Field("ref_createAt", ref.getCreateAt()));
 		return oss.insertObject(new InsertCommand(new Entity(tableName, fields)));
 	}
@@ -160,6 +162,7 @@ public class MicroRefs implements Refs {
 		fields.add(new Field("ref_label", ref.getLabel()));
 		fields.add(new Field("ref_comment", ref.getComment()));
 		fields.add(new Field("ref_properties", ref.getProperties()));
+		fields.add(new Field("ref_order", ref.getOrder()));
 		fields.add(new Field("ref_updateAt", System.currentTimeMillis()));
 		return oss.updateObject(new UpdateCommand(tableName, fields, Condition.and(conditions)));
 	}

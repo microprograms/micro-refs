@@ -9,6 +9,7 @@ public class Ref {
 	private String label = "";
 	private String comment = "";
 	private String properties = "{}";
+	private Integer order = 0;
 	private long createAt = System.currentTimeMillis();
 	private long updateAt = 0;
 
@@ -58,6 +59,14 @@ public class Ref {
 
 	public void setProperties(String properties) {
 		this.properties = properties;
+	}
+
+	public Integer getOrder() {
+		return order;
+	}
+
+	public void setOrder(Integer order) {
+		this.order = order;
 	}
 
 	public long getCreateAt() {
