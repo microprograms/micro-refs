@@ -28,6 +28,8 @@ import com.github.microprograms.micro_refs.model.Ref;
 import com.github.microprograms.micro_refs.transaction.AbstractTransaction;
 import com.github.microprograms.micro_refs.transaction.RefsTransactionFunctionalInterface;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class MicroRefs implements Refs {
 
 	private MicroOssProvider oss;
@@ -37,7 +39,11 @@ public class MicroRefs implements Refs {
 	}
 
 	private String _getTableName(Class<?> clz) {
-		return oss.getConfig().getTablePrefix() + clz.getSimpleName();
+		String prefix = oss.getConfig().getTablePrefix();
+		if (StringUtils.isBlank(prefix)) {
+			return clz.getSimpleName();
+		}
+		return prefix + clz.getSimpleName();
 	}
 
 	@Override
@@ -94,7 +100,11 @@ public class MicroRefs implements Refs {
 	}
 
 	private String _getRefTableName(Ref ref) {
-		return oss.getConfig().getTablePrefix() + ref.getRefTableName();
+		String prefix = oss.getConfig().getTablePrefix();
+		if (StringUtils.isBlank(prefix)) {
+			return ref.getRefTableName();
+		}
+		return prefix + ref.getRefTableName();
 	}
 
 	@Override
