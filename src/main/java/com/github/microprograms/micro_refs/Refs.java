@@ -63,5 +63,21 @@ public interface Refs {
 			Condition sourceCondition, Condition targetCondition, List<Sort> sorts, PagerRequest pager)
 			throws MicroOssException;
 
+	<S, T> int queryNotRefCount(Class<S> sourceClz, Class<T> targetClz, Condition sourceCondition,
+			Condition targetCondition) throws MicroOssException;
+
+	<S, T> QueryRefResult<S, T> queryNotRef(Class<S> sourceClz, Class<T> targetClz, Condition sourceCondition,
+			Condition targetCondition) throws MicroOssException;
+
+	<S, T> QueryRefResult<S, T> queryNotRef(Class<S> sourceClz, Class<T> targetClz, Condition sourceCondition,
+			Condition targetCondition, List<Sort> sorts) throws MicroOssException;
+
+	<S, T> QueryRefResult<S, T> queryNotRef(Class<S> sourceClz, Class<T> targetClz, Condition sourceCondition,
+			Condition targetCondition, List<Sort> sorts, PagerRequest pager) throws MicroOssException;
+
+	<S, T> QueryRefResult<S, T> queryNotRef(Class<S> sourceClz, Class<T> targetClz, List<String> fieldNames,
+			Condition sourceCondition, Condition targetCondition, List<Sort> sorts, PagerRequest pager)
+			throws MicroOssException;
+
 	void execute(RefsTransactionFunctionalInterface transaction) throws MicroOssException;
 }

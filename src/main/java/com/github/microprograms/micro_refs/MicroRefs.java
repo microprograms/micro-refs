@@ -254,6 +254,71 @@ public class MicroRefs implements Refs {
 	}
 
 	@Override
+	public <S, T> int queryNotRefCount(Class<S> sourceClz, Class<T> targetClz, Condition sourceCondition,
+			Condition targetCondition) throws MicroOssException {
+		Ref.Location sourceRefLocation = new Ref.Location(sourceClz);
+		Ref.Location targetRefLocation = new Ref.Location(targetClz);
+		String refTableName = _getRefTableName(new Ref(Arrays.asList(sourceRefLocation, targetRefLocation)));
+		String sourceTableName = _getTableName(sourceClz);
+		String targetTableName = _getTableName(targetClz);
+		Condition sourceJoinCondition = Condition.and(sourceCondition,
+				Condition.raw(String.format("ref.%s=", sourceRefLocation.getRefIdFieldName()), "source.id"));
+		Condition targetJoinCondition = Condition.and(targetCondition,
+				Condition.raw(String.format("ref.%s=", targetRefLocation.getRefIdFieldName()), "target.id"));
+		List<Join> joins = new ArrayList<>();
+		joins.add(new Join(Join.TypeEnum.join, String.format("%s source", sourceTableName), sourceJoinCondition));
+		joins.add(new Join(Join.TypeEnum.rightJoin, String.format("%s target", targetTableName), targetJoinCondition));
+		return oss.queryCount(new SelectCountCommand(String.format("%s ref", refTableName), joins,
+				Condition.build("source.id is", null)));
+	}
+
+	@Override
+	public <S, T> QueryRefResult<S, T> queryNotRef(Class<S> sourceClz, Class<T> targetClz, Condition sourceCondition,
+			Condition targetCondition) throws MicroOssException {
+		return queryNotRef(sourceClz, targetClz, null, sourceCondition, targetCondition, null, null);
+	}
+
+	@Override
+	public <S, T> QueryRefResult<S, T> queryNotRef(Class<S> sourceClz, Class<T> targetClz, Condition sourceCondition,
+			Condition targetCondition, List<Sort> sorts) throws MicroOssException {
+		return queryNotRef(sourceClz, targetClz, null, sourceCondition, targetCondition, sorts, null);
+	}
+
+	@Override
+	public <S, T> QueryRefResult<S, T> queryNotRef(Class<S> sourceClz, Class<T> targetClz, Condition sourceCondition,
+			Condition targetCondition, List<Sort> sorts, PagerRequest pager) throws MicroOssException {
+		return queryNotRef(sourceClz, targetClz, null, sourceCondition, targetCondition, sorts, pager);
+	}
+
+	@Override
+	public <S, T> QueryRefResult<S, T> queryNotRef(Class<S> sourceClz, Class<T> targetClz, List<String> fieldNames,
+			Condition sourceCondition, Condition targetCondition, List<Sort> sorts, PagerRequest pager)
+			throws MicroOssException {
+		Ref.Location sourceRefLocation = new Ref.Location(sourceClz);
+		Ref.Location targetRefLocation = new Ref.Location(targetClz);
+		String refTableName = _getRefTableName(new Ref(Arrays.asList(sourceRefLocation, targetRefLocation)));
+		String sourceTableName = _getTableName(sourceClz);
+		String targetTableName = _getTableName(targetClz);
+		if (null == fieldNames) {
+			fieldNames = new ArrayList<>();
+		}
+		if (fieldNames.isEmpty()) {
+			fieldNames.add("ref.*");
+			fieldNames.add("target.*");
+		}
+		Condition sourceJoinCondition = Condition.and(sourceCondition,
+				Condition.raw(String.format("ref.%s=", sourceRefLocation.getRefIdFieldName()), "source.id"));
+		Condition targetJoinCondition = Condition.and(targetCondition,
+				Condition.raw(String.format("ref.%s=", targetRefLocation.getRefIdFieldName()), "target.id"));
+		List<Join> joins = new ArrayList<>();
+		joins.add(new Join(Join.TypeEnum.join, String.format("%s source", sourceTableName), sourceJoinCondition));
+		joins.add(new Join(Join.TypeEnum.rightJoin, String.format("%s target", targetTableName), targetJoinCondition));
+		QueryResult<?> queryResult = oss.query(new SelectCommand(String.format("%s ref", refTableName), fieldNames,
+				joins, Condition.build("source.id is", null), sorts, pager));
+		return new QueryRefResult<>(sourceClz, targetClz, queryResult.getEntities());
+	}
+
+	@Override
 	public void execute(RefsTransactionFunctionalInterface transaction) throws MicroOssException {
 		oss.execute(new AbstractTransaction() {
 			@Override
