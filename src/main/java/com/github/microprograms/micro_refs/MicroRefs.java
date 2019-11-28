@@ -241,6 +241,13 @@ public class MicroRefs implements Refs {
 			fieldNames.add("ref.*");
 			fieldNames.add("target.*");
 		}
+		if (null == sorts) {
+			sorts = new ArrayList<>();
+		}
+		if (sorts.isEmpty()) {
+			sorts.add(Sort.asc("ref.ref_order"));
+			sorts.add(Sort.desc("ref.ref_createAt"));
+		}
 		Condition sourceJoinCondition = Condition.and(sourceCondition,
 				Condition.raw(String.format("ref.%s=", sourceRefLocation.getRefIdFieldName()), "source.id"));
 		Condition targetJoinCondition = Condition.and(targetCondition,
