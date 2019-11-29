@@ -11,6 +11,7 @@ import com.github.microprograms.micro_oss_core.model.ddl.DropTableCommand;
 import com.github.microprograms.micro_oss_core.model.dml.query.Condition;
 import com.github.microprograms.micro_oss_core.model.dml.query.PagerRequest;
 import com.github.microprograms.micro_oss_core.model.dml.query.Sort;
+import com.github.microprograms.micro_oss_core.utils.MicroOssUtils;
 import com.github.microprograms.micro_refs.model.QueryRefResult;
 import com.github.microprograms.micro_refs.model.Ref;
 import com.github.microprograms.micro_refs.transaction.AbstractTransaction;
@@ -27,17 +28,13 @@ public class MicroRefs implements Refs {
 
 	@Override
 	public void createSchema(Class<?> clz, CreateTableCommand command) throws MicroOssException {
-		String tablePrefix = oss.getConfig().getTablePrefix();
-		String tableName = MicroRefsUtils.getTableName(clz, tablePrefix);
-		command.getTableDefinition().setTableName(tableName);
+		command.getTableDefinition().setTableName(MicroOssUtils.getTableName(clz));
 		oss.createTable(command);
 	}
 
 	@Override
 	public void dropSchema(Class<?> clz) throws MicroOssException {
-		String tablePrefix = oss.getConfig().getTablePrefix();
-		String tableName = MicroRefsUtils.getTableName(clz, tablePrefix);
-		oss.dropTable(new DropTableCommand(tableName));
+		oss.dropTable(new DropTableCommand(MicroOssUtils.getTableName(clz)));
 	}
 
 	@Override
@@ -84,40 +81,34 @@ public class MicroRefs implements Refs {
 
 	@Override
 	public <S, T> void createRefSchema(Class<S> sourceClz, Class<T> targetClz) throws MicroOssException {
-		String tablePrefix = oss.getConfig().getTablePrefix();
-		oss.createTable(MicroRefsUtils.buildCreateTableCommand(sourceClz, targetClz, tablePrefix));
+		oss.createTable(MicroRefsUtils.buildCreateTableCommand(sourceClz, targetClz));
 	}
 
 	@Override
 	public <S, T> void dropRefSchema(Class<S> sourceClz, Class<T> targetClz) throws MicroOssException {
-		String tablePrefix = oss.getConfig().getTablePrefix();
-		oss.dropTable(MicroRefsUtils.buildDropTableCommand(sourceClz, targetClz, tablePrefix));
+		oss.dropTable(MicroRefsUtils.buildDropTableCommand(sourceClz, targetClz));
 	}
 
 	@Override
 	public int insertRef(Ref ref) throws MicroOssException {
-		String tablePrefix = oss.getConfig().getTablePrefix();
-		return oss.insertObject(MicroRefsUtils.buildInsertCommand(ref, tablePrefix));
+		return oss.insertObject(MicroRefsUtils.buildInsertCommand(ref));
 	}
 
 	@Override
 	public int updateRef(Ref ref) throws MicroOssException {
-		String tablePrefix = oss.getConfig().getTablePrefix();
-		return oss.updateObject(MicroRefsUtils.buildUpdateCommand(ref, tablePrefix));
+		return oss.updateObject(MicroRefsUtils.buildUpdateCommand(ref));
 	}
 
 	@Override
 	public int deleteRef(Ref ref) throws MicroOssException {
-		String tablePrefix = oss.getConfig().getTablePrefix();
-		return oss.deleteObject(MicroRefsUtils.buildDeleteCommand(ref, tablePrefix));
+		return oss.deleteObject(MicroRefsUtils.buildDeleteCommand(ref));
 	}
 
 	@Override
 	public <S, T> int queryRefCount(Class<S> sourceClz, Class<T> targetClz, Condition sourceCondition,
 			Condition targetCondition) throws MicroOssException {
-		String tablePrefix = oss.getConfig().getTablePrefix();
 		return oss.queryCount(MicroRefsUtils.buildSelectCountCommand_queryRefCount(sourceClz, targetClz,
-				sourceCondition, targetCondition, tablePrefix));
+				sourceCondition, targetCondition));
 	}
 
 	@Override
@@ -142,18 +133,16 @@ public class MicroRefs implements Refs {
 	public <S, T> QueryRefResult<S, T> queryRef(Class<S> sourceClz, Class<T> targetClz, List<String> fieldNames,
 			Condition sourceCondition, Condition targetCondition, List<Sort> sorts, PagerRequest pager)
 			throws MicroOssException {
-		String tablePrefix = oss.getConfig().getTablePrefix();
 		QueryResult<?> queryResult = oss.query(MicroRefsUtils.buildSelectCommand_queryRef(sourceClz, targetClz,
-				fieldNames, sourceCondition, targetCondition, sorts, pager, tablePrefix));
+				fieldNames, sourceCondition, targetCondition, sorts, pager));
 		return new QueryRefResult<>(sourceClz, targetClz, queryResult.getEntities());
 	}
 
 	@Override
 	public <S, T> int queryNotRefCount(Class<S> sourceClz, Class<T> targetClz, Condition sourceCondition,
 			Condition targetCondition) throws MicroOssException {
-		String tablePrefix = oss.getConfig().getTablePrefix();
 		return oss.queryCount(MicroRefsUtils.buildSelectCountCommand_queryNotRefCount(sourceClz, targetClz,
-				sourceCondition, targetCondition, tablePrefix));
+				sourceCondition, targetCondition));
 	}
 
 	@Override
@@ -178,9 +167,8 @@ public class MicroRefs implements Refs {
 	public <S, T> QueryRefResult<S, T> queryNotRef(Class<S> sourceClz, Class<T> targetClz, List<String> fieldNames,
 			Condition sourceCondition, Condition targetCondition, List<Sort> sorts, PagerRequest pager)
 			throws MicroOssException {
-		String tablePrefix = oss.getConfig().getTablePrefix();
 		QueryResult<?> queryResult = oss.query(MicroRefsUtils.buildSelectCommand_queryNotRef(sourceClz, targetClz,
-				fieldNames, sourceCondition, targetCondition, sorts, pager, tablePrefix));
+				fieldNames, sourceCondition, targetCondition, sorts, pager));
 		return new QueryRefResult<>(sourceClz, targetClz, queryResult.getEntities());
 	}
 

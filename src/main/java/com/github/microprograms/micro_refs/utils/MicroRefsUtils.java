@@ -21,32 +21,16 @@ import com.github.microprograms.micro_oss_core.model.dml.query.Sort;
 import com.github.microprograms.micro_oss_core.model.dml.update.DeleteCommand;
 import com.github.microprograms.micro_oss_core.model.dml.update.InsertCommand;
 import com.github.microprograms.micro_oss_core.model.dml.update.UpdateCommand;
+import com.github.microprograms.micro_oss_core.utils.MicroOssUtils;
 import com.github.microprograms.micro_refs.model.Ref;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class MicroRefsUtils {
 
-    public static String getTableName(Class<?> clz, String tablePrefix) {
-        if (StringUtils.isBlank(tablePrefix)) {
-            return clz.getSimpleName();
-        }
-        return tablePrefix + clz.getSimpleName();
-    }
-
-    public static String getRefTableName(Ref ref, String tablePrefix) {
-        if (StringUtils.isBlank(tablePrefix)) {
-            return ref.getRefTableName();
-        }
-        return tablePrefix + ref.getRefTableName();
-    }
-
-    public static <S, T> CreateTableCommand buildCreateTableCommand(Class<S> sourceClz, Class<T> targetClz,
-            String tablePrefix) {
+    public static <S, T> CreateTableCommand buildCreateTableCommand(Class<S> sourceClz, Class<T> targetClz) {
         Ref.Location sourceRefLocation = new Ref.Location(sourceClz);
         Ref.Location targetRefLocation = new Ref.Location(targetClz);
         Ref ref = new Ref(Arrays.asList(sourceRefLocation, targetRefLocation));
-        String tableName = getRefTableName(ref, tablePrefix);
+        String tableName = ref.getRefTableName();
         String tableComment = "ref";
         List<FieldDefinition> fields = new ArrayList<FieldDefinition>();
         for (int i = 0; i < ref.getLocations().size(); i++) {
@@ -67,17 +51,16 @@ public class MicroRefsUtils {
         return new CreateTableCommand(new TableDefinition(tableName, tableComment, fields));
     }
 
-    public static <S, T> DropTableCommand buildDropTableCommand(Class<S> sourceClz, Class<T> targetClz,
-            String tablePrefix) {
+    public static <S, T> DropTableCommand buildDropTableCommand(Class<S> sourceClz, Class<T> targetClz) {
         Ref.Location sourceRefLocation = new Ref.Location(sourceClz);
         Ref.Location targetRefLocation = new Ref.Location(targetClz);
         Ref ref = new Ref(Arrays.asList(sourceRefLocation, targetRefLocation));
-        String tableName = getRefTableName(ref, tablePrefix);
+        String tableName = ref.getRefTableName();
         return new DropTableCommand(tableName);
     }
 
-    public static InsertCommand buildInsertCommand(Ref ref, String tablePrefix) {
-        String tableName = getRefTableName(ref, tablePrefix);
+    public static InsertCommand buildInsertCommand(Ref ref) {
+        String tableName = ref.getRefTableName();
         List<Field> fields = new ArrayList<>();
         for (int i = 0; i < ref.getLocations().size(); i++) {
             Ref.Location location = ref.getLocations().get(i);
@@ -92,8 +75,8 @@ public class MicroRefsUtils {
         return new InsertCommand(new Entity(tableName, fields));
     }
 
-    public static UpdateCommand buildUpdateCommand(Ref ref, String tablePrefix) {
-        String tableName = getRefTableName(ref, tablePrefix);
+    public static UpdateCommand buildUpdateCommand(Ref ref) {
+        String tableName = ref.getRefTableName();
         Condition[] conditions = new Condition[ref.getLocations().size()];
         for (int i = 0; i < ref.getLocations().size(); i++) {
             Ref.Location location = ref.getLocations().get(i);
@@ -109,8 +92,8 @@ public class MicroRefsUtils {
         return new UpdateCommand(tableName, fields, Condition.and(conditions));
     }
 
-    public static DeleteCommand buildDeleteCommand(Ref ref, String tablePrefix) {
-        String tableName = getRefTableName(ref, tablePrefix);
+    public static DeleteCommand buildDeleteCommand(Ref ref) {
+        String tableName = ref.getRefTableName();
         Condition[] conditions = new Condition[ref.getLocations().size()];
         for (int i = 0; i < ref.getLocations().size(); i++) {
             Ref.Location location = ref.getLocations().get(i);
@@ -121,13 +104,12 @@ public class MicroRefsUtils {
     }
 
     public static <S, T> SelectCountCommand buildSelectCountCommand_queryRefCount(Class<S> sourceClz,
-            Class<T> targetClz, Condition sourceCondition, Condition targetCondition, String tablePrefix) {
+            Class<T> targetClz, Condition sourceCondition, Condition targetCondition) {
         Ref.Location sourceRefLocation = new Ref.Location(sourceClz);
         Ref.Location targetRefLocation = new Ref.Location(targetClz);
-        String refTableName = getRefTableName(new Ref(Arrays.asList(sourceRefLocation, targetRefLocation)),
-                tablePrefix);
-        String sourceTableName = getTableName(sourceClz, tablePrefix);
-        String targetTableName = getTableName(targetClz, tablePrefix);
+        String refTableName = new Ref(Arrays.asList(sourceRefLocation, targetRefLocation)).getRefTableName();
+        String sourceTableName = MicroOssUtils.getTableName(sourceClz);
+        String targetTableName = MicroOssUtils.getTableName(targetClz);
         Condition sourceJoinCondition = Condition.and(sourceCondition,
                 Condition.raw(String.format("ref.%s=", sourceRefLocation.getRefIdFieldName()), "source.id"));
         Condition targetJoinCondition = Condition.and(targetCondition,
@@ -140,13 +122,12 @@ public class MicroRefsUtils {
 
     public static <S, T> SelectCommand buildSelectCommand_queryRef(Class<S> sourceClz, Class<T> targetClz,
             List<String> fieldNames, Condition sourceCondition, Condition targetCondition, List<Sort> sorts,
-            PagerRequest pager, String tablePrefix) throws MicroOssException {
+            PagerRequest pager) throws MicroOssException {
         Ref.Location sourceRefLocation = new Ref.Location(sourceClz);
         Ref.Location targetRefLocation = new Ref.Location(targetClz);
-        String refTableName = getRefTableName(new Ref(Arrays.asList(sourceRefLocation, targetRefLocation)),
-                tablePrefix);
-        String sourceTableName = getTableName(sourceClz, tablePrefix);
-        String targetTableName = getTableName(targetClz, tablePrefix);
+        String refTableName = new Ref(Arrays.asList(sourceRefLocation, targetRefLocation)).getRefTableName();
+        String sourceTableName = MicroOssUtils.getTableName(sourceClz);
+        String targetTableName = MicroOssUtils.getTableName(targetClz);
         if (null == fieldNames) {
             fieldNames = new ArrayList<>();
         }
@@ -172,14 +153,12 @@ public class MicroRefsUtils {
     }
 
     public static <S, T> SelectCountCommand buildSelectCountCommand_queryNotRefCount(Class<S> sourceClz,
-            Class<T> targetClz, Condition sourceCondition, Condition targetCondition, String tablePrefix)
-            throws MicroOssException {
+            Class<T> targetClz, Condition sourceCondition, Condition targetCondition) throws MicroOssException {
         Ref.Location sourceRefLocation = new Ref.Location(sourceClz);
         Ref.Location targetRefLocation = new Ref.Location(targetClz);
-        String refTableName = getRefTableName(new Ref(Arrays.asList(sourceRefLocation, targetRefLocation)),
-                tablePrefix);
-        String sourceTableName = getTableName(sourceClz, tablePrefix);
-        String targetTableName = getTableName(targetClz, tablePrefix);
+        String refTableName = new Ref(Arrays.asList(sourceRefLocation, targetRefLocation)).getRefTableName();
+        String sourceTableName = MicroOssUtils.getTableName(sourceClz);
+        String targetTableName = MicroOssUtils.getTableName(targetClz);
         Condition sourceJoinCondition = Condition.and(sourceCondition,
                 Condition.raw(String.format("ref.%s=", sourceRefLocation.getRefIdFieldName()), "source.id"));
         Condition targetJoinCondition = Condition.and(targetCondition,
@@ -193,13 +172,12 @@ public class MicroRefsUtils {
 
     public static <S, T> SelectCommand buildSelectCommand_queryNotRef(Class<S> sourceClz, Class<T> targetClz,
             List<String> fieldNames, Condition sourceCondition, Condition targetCondition, List<Sort> sorts,
-            PagerRequest pager, String tablePrefix) throws MicroOssException {
+            PagerRequest pager) throws MicroOssException {
         Ref.Location sourceRefLocation = new Ref.Location(sourceClz);
         Ref.Location targetRefLocation = new Ref.Location(targetClz);
-        String refTableName = getRefTableName(new Ref(Arrays.asList(sourceRefLocation, targetRefLocation)),
-                tablePrefix);
-        String sourceTableName = getTableName(sourceClz, tablePrefix);
-        String targetTableName = getTableName(targetClz, tablePrefix);
+        String refTableName = new Ref(Arrays.asList(sourceRefLocation, targetRefLocation)).getRefTableName();
+        String sourceTableName = MicroOssUtils.getTableName(sourceClz);
+        String targetTableName = MicroOssUtils.getTableName(targetClz);
         if (null == fieldNames) {
             fieldNames = new ArrayList<>();
         }
